@@ -10,4 +10,4 @@ add api key and secrets of cex.io and twilio to config.py
 # Running the script
 * run with python3 ethtr.py
 
-* if you want to get sms notification to mobile run run with python3 ethtr.py -m
+* if you want to get sms notification to mobile run with python3 ethtr.py -m
