@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-# Author:	t0pep0
+# Original Author:	t0pep0
 # e-mail:	t0pep0.gentoo@gmail.com
-# Jabber:	t0pep0@jabber.ru
-# BTC   :	1ipEA2fcVyjiUnBqUx7PVy5efktz2hucb
-# donate free =)
+# added some modifications me
 import hmac
 import hashlib
 import time
