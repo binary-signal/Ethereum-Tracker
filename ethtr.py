@@ -123,8 +123,8 @@ while True:
                             to=my_num,
                             from_=twilio_num,
                             body=message_body)
-                    print("Converter {} EUR".format(
-                        cex.converter(eth_wallet, 'ETH/EUR')['amnt']))
+                    """print("Converter {} EUR".format(
+                        cex.converter(eth_wallet, 'ETH/EUR')['amnt']))"""
                     print("\n\n\n")
 
     time.sleep(update_int)
