@@ -1,7 +1,7 @@
 # Ethereum-Tracker
 Track ethereum trading profits from cex.io and get notified in your mobile phone via twilio
 
-# Requierments
+# Requirements
 pip3 install requests, twilio
 
 # Configuration
