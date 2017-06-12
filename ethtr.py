@@ -29,7 +29,7 @@ params = '?convert=EUR&limit=10'
 url = api+endpoint+params
 
 """ update interval for api calls """
-update_int = 600  # every 10 minutes
+update_int = 300  # every 10 minutes
 
 """ setup twilio client """
 client = Client(account_sid, auth_token)
@@ -38,9 +38,16 @@ client = Client(account_sid, auth_token)
 cex = cexapi.API(username, api_key, api_secret)
 
 """ holds past values of price """
-past_values = ['0']
-past_values_numeric = []
+past_values = list()
+past_values_numeric = list()
 holds = 10  # max length of past_values list
+
+
+
+# fetch latest price  before lopping
+last_price = cex.ticker()['last'][:6]
+past_values.append(last_price)
+past_values_numeric.append(float(last_price))
 
 while True:
     resp = requests.get(url)
@@ -72,14 +79,14 @@ while True:
 
                     """ calculate net  """
                     net = eth_wallet * float(last_price)
-                    print("Net:         {:.2f} EUR  |".format(net))
+                    print("Net:         {:.2f} EUR".format(net))
 
                     """ calculate profit or loss """
                     profit = net - investment - fees
                     if profit > 0:
-                        print("Profit:      " + bcolors.GREEN+"{:.2f} EUR  ".format(profit) +bcolors.ENDC+  "| ", end="")
+                        print("Profit:       " + bcolors.GREEN+"{:.2f} EUR  ".format(profit) +bcolors.ENDC+  "| ", end="")
                     else:
-                        print("Profit:      " + bcolors.FAIL + "{:.2f} EUR  ".format(profit) +bcolors.ENDC+  "| ", end="")
+                        print("Profit:       " + bcolors.FAIL + "{:.2f} EUR  ".format(profit) +bcolors.ENDC+  "| ", end="")
 
                     """ calculate return of investment percentage """
                     if net / float(investment) <= 1:
