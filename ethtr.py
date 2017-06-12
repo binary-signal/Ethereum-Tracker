@@ -153,8 +153,8 @@ while True:
                     """ price alert sms"""
                     if alert:
                         alert = False
-                        if price_alert > float(last_price):
-                            print("Price alert ETH trading now at{:.2f}".format(float(last_price)))
+                        if price_alert < float(last_price):
+                            print("\nPrice alert ETH trading now at {:.2f}\n".format(float(last_price)))
                             message_body = "Eth Track \n" +\
                                            "cex.io price alert" +\
                                            "ETH: {:.2f}".format(float(last_price))
