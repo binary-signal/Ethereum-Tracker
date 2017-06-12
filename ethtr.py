@@ -80,20 +80,21 @@ while True:
                     profit = net - investment - fees
                     if profit > 0:
                         print("Profit:       " + bcolors.GREEN + "{:.2f} EUR  ".format(
-                            profit) + bcolors.ENDC + "| ", end="")
+                                profit) + bcolors.ENDC + "| ", end="")
                     else:
                         print("Profit:       " + bcolors.FAIL + "{:.2f} EUR  ".format(
-                            profit) + bcolors.ENDC + "| ", end="")
+                                profit) + bcolors.ENDC + "| ", end="")
 
                     """ calculate return of investment percentage """
                     if net / float(investment) <= 1:
                         calc = (1 - (net / float(investment)))
                         print(
-                            "ROI: " + bcolors.FAIL + "-{:.2f} %".format(100 * calc) + bcolors.ENDC)
+                                "ROI: " + bcolors.FAIL + "-{:.2f} %".format(
+                                    100 * calc) + bcolors.ENDC)
                     else:
                         calc = (net / float(investment)) - 1
                         print("ROI:  " + bcolors.GREEN + "+{:.2f} %".format(
-                            100 * calc) + bcolors.ENDC)
+                                100 * calc) + bcolors.ENDC)
 
                     print("Wallet:   {} ETH".format(eth_wallet))
 
@@ -107,7 +108,7 @@ while True:
 
                     """ update history of previews price update """
                     past_values_numeric.append(
-                        float(entry['price_eur']))  # store always numeric value price
+                            float(entry['price_eur']))  # store always numeric value price
                     if past_values[-1] < entry['price_eur']:  # use new  price is up use green color
                         past_values.append(bcolors.GREEN + entry['price_eur'][:6] + bcolors.ENDC)
                     elif past_values[-1] == entry[
@@ -130,11 +131,13 @@ while True:
                     print("Average price {:d}m : {:.2f}".format(int(minutes), mean_price))
 
                     human_time = datetime.datetime.fromtimestamp(
-                        int(entry['last_updated'])).strftime('%d-%m-%Y %H:%M:%S')
+                            int(entry['last_updated'])).strftime('%d-%m-%Y %H:%M:%S')
                     print(
-                        bcolors.MAGENTA + "Last Updated:   {:s}".format(human_time) + bcolors.ENDC)
+                            bcolors.MAGENTA + "Last Updated:   {:s}".format(
+                                human_time) + bcolors.ENDC)
 
                     print('\n')
+
                     """ send message to mobile  with latest infos """
                     if len(argv) == 2 and argv[1] in "-m":
                         print("Sending trading summary sms to mobile... ")
@@ -150,13 +153,15 @@ while True:
                         if message is None:
                             print("Api error")
                             break
+
                     """ price alert sms"""
                     if alert:
                         alert = False
                         if price_alert < float(last_price):
-                            print("\nPrice alert ETH trading now at {:.2f}\n".format(float(last_price)))
-                            message_body = "Eth Track \n" +\
-                                           "cex.io price alert" +\
+                            print("\nPrice alert ETH trading now at {:.2f}\n".format(
+                                float(last_price)))
+                            message_body = "Eth Track \n" + \
+                                           "cex.io price alert" + \
                                            "ETH: {:.2f}".format(float(last_price))
                             message = client.api.account.messages.create(
                                     to=my_num,
@@ -165,6 +170,32 @@ while True:
                             if message is None:
                                 print("Api error")
                                 break
+
+                    """ percentage alert via sma """
+                    if float(entry['percent_change_1h']) > percent_alert:
+                        message_body = "Eth Track \n" + \
+                                       "Percent alert ETH is going up +10%"
+                        print(message_body)
+                        message = client.api.account.messages.create(
+                                to=my_num,
+                                from_=twilio_num,
+                                body=message_body)
+                        if message is None:
+                            print("Api error")
+                            break
+                    elif -percent_alert < float(entry['percent_change_1h']) < percent_alert:
+                        pass
+                    else:
+                        message_body = "Eth Track \n" + \
+                                       "Percent alert ETH is going down -10%"
+                        print(message_body)
+                        message = client.api.account.messages.create(
+                                to=my_num,
+                                from_=twilio_num,
+                                body=message_body)
+                        if message is None:
+                            print("Api error")
+                            break
                     """
                     print("Converter {} EUR \n\n\n".format(cex.converter(eth_wallet, 'ETH/EUR')['amnt']))
                     """
