@@ -10,3 +10,9 @@ twilio_num = "+xxxxxxxx",
 username = "xxxxxxxxx"
 api_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 api_secret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+
+""" finance """
+investment = 50  # in euro
+fees = 2.96
+ticker = 'ETH/EUR'

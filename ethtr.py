@@ -4,16 +4,15 @@ import datetime
 import json
 import cexapi
 from twilio.rest import Client
-from config import twilio_num, my_num, api_key, api_secret, account_sid, \
-    username, auth_token
+from config import *
 from sys import argv
 
 
-# color for terminal output
+# colors for terminal output
 class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
+    MAGENTA = '\033[95m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
     WARNING = '\033[93m'
     FAIL = '\033[91m'
     ENDC = '\033[0m'
@@ -21,22 +20,27 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-# cexapi
+""" cex api public endpoint"""
 api = 'https://api.coinmarketcap.com/v1'
 endpoint = '/ticker/'
 params = '?convert=EUR&limit=10'
-update_int = 500  # every 5 minutes
 
-url = api + endpoint + params
 
+url = api+endpoint+params
+
+""" update interval for api calls """
+update_int = 3  # every 10 minutes
+
+""" setup twilio client """
 client = Client(account_sid, auth_token)
 
+""" setup cex.io api '"""
 cex = cexapi.API(username, api_key, api_secret)
-investement = 50  # in euro
-fees = 2.96
 
-past_values = ['-']
-holds = 10  # past_values limit
+""" holds past values of price """
+past_values = ['0']
+past_values_numeric = []
+holds = 10  # max length of past_values list
 
 while True:
     resp = requests.get(url)
@@ -48,83 +52,88 @@ while True:
 
             if isinstance(entry, dict):
                 if 'id' in entry and entry['id'] == 'ethereum':
-                    print(entry['name'], "CEX.IO Tracker",
-                          time.strftime('%l:%M%p %Z on %b %d, %Y'), '\n')
+                    print(entry['name'], "CEX.IO Tracker", time.strftime('%l:%M%p %Z on %b %d, %Y'), '\n')
 
-                    print("Change 1 hour:  {} %  | ".format(
-                        entry['percent_change_1h']), end="")
-                    print(
-                        "24 hour: {} % | ".format(entry['percent_change_24h']),
-                        end="")
+                    """ percentage changes 1 hour 1 day 7 days """
+                    print("Change 1 hour:  {} %  | ".format(entry['percent_change_1h']), end="")
+                    print("24 hour: {} % | ".format(entry['percent_change_24h']),end="")
                     print("7 days:  {} %".format(entry['percent_change_7d']))
 
-                    ticker_usd = cex.ticker('ETH/USD')['last']
-                    print("Price in USD:   {0:.2f} ".format(
-                        float(ticker_usd)), end="")
+                    """ latest price in EUR """
+                    last_price = cex.ticker()['last']
+                    print(" | Euro:  {0:.2f}".format(float(last_price)))
 
-                    ticker_eur = cex.ticker('ETH/EUR')['last']
-                    print(" | Euro:  {0:.2f}".format(
-                        float(ticker_eur)))
-
+                    """ get wallet balance """
                     wallet = cex.balance()
                     eth_wallet = float(wallet['ETH']['available'])
 
-                    net = eth_wallet * float(ticker_eur)
+                    """ calculate net  """
+                    net = eth_wallet * float(last_price)
                     print("Net:         {0:.2f} EUR  |".format(net))
-                    profit = net - investement - fees
-                    if profit > 0:
-                        print(
-                            "Profit:      " + bcolors.OKGREEN + "{0:.2f} EUR  ".format(
-                                profit) + bcolors.ENDC + "| ", end="")
-                    else:
-                        print(
-                            "Profit:      " + bcolors.FAIL + "{0:.2f} EUR  ".format(
-                                profit) + bcolors.ENDC + "| ", end="")
 
-                    if net / float(investement) <= 1:
-                        calc = (1 - (net / float(investement)))
-                        print("ROI: " + bcolors.FAIL + "-{0:.2f} %".format(
-                            100 * calc) + bcolors.ENDC)
+                    """ calculate profit or loss """
+                    profit = net - investment - fees
+                    if profit > 0:
+                        print("Profit:      " + bcolors.GREEN+"{0:.2f} EUR  ".format(profit) +bcolors.ENDC+  "| ", end="")
                     else:
-                        calc = (net / float(investement)) - 1
-                        print("ROI:  " + bcolors.OKGREEN + "{0:.2f} %".format(
-                            100 * calc) + bcolors.ENDC)
+                        print("Profit:      " + bcolors.FAIL + "{0:.2f} EUR  ".format(profit) +bcolors.ENDC+  "| ", end="")
+
+                    """ calculate return of investment percentage """
+                    if net / float(investment) <= 1:
+                        calc = (1 - (net / float(investment)))
+                        print("ROI: " + bcolors.FAIL + "-{0:.2f} %".format(100 * calc) +bcolors.ENDC)
+                    else:
+                        calc = (net / float(investment)) - 1
+                        print("ROI:  " + bcolors.GREEN + "{0:.2f} %".format(100 * calc) + bcolors.ENDC)
 
                     print("Wallet:   {} ETH".format(eth_wallet))
 
-                    ohlc = cex.ticker('ETH/EUR')
-                    print("\nLow: {0:.2f} EUR / High: {0:.2f} EUR".format(
-                        float(ohlc['low']), float(ohlc['high'])))
+                    """ get high low values """
+                    hl = cex.ticker(ticker)
+                    print("\nLow: {0:.2f} EUR  ".format(float(hl['low'])), end="")
+                    print("High: {0:.2f} EUR".format(float(hl['high'])))
+
+                    """ update history of previews price update """
+                    past_values_numeric.append(float(entry['price_eur']))
                     if past_values[-1] < entry['price_eur']:
-                        past_values.append("up")
+                        past_values.append(bcolors.GREEN + entry['price_eur'][:6]+ bcolors.ENDC)
                     elif past_values[-1] == entry['price_eur']:
-                        past_values.append("steady")
+                        past_values.append(entry['price_eur'][:6]+bcolors.ENDC)
                     else:
-                        past_values.append("down")
+                        past_values.append(bcolors.FAIL + entry['price_eur'][:]+bcolors.ENDC)
                     if len(past_values) == holds + 1:
                         past_values.pop(0)
+                        past_values_numeric.pop(0)
 
+
+                    """ print historic data """
                     print("Past ticks: ", end="")
                     for val in past_values:
-                        print("{} ".format(val), end="")
+                        print(val+" ", end="")
                     print("")
-                    print(bcolors.WARNING + "Last Updated:   {}".format(
-                        datetime.datetime.fromtimestamp(
-                            int(entry['last_updated'])).strftime(
-                            '%d-%m-%Y %H:%M:%S')) + bcolors.ENDC)
+
+                    minutes = (update_int/60) * len(past_values_numeric)
+                    mean_price = sum(past_values_numeric) / float(len(past_values_numeric))
+                    print("Average price {:d}m : {0:.2f}".format(int(minutes), mean_price))
+
+                    human_time = datetime.datetime.fromtimestamp(int(entry['last_updated'])).strftime('%d-%m-%Y %H:%M:%S')
+                    print(bcolors.MAGENTA + "Last Updated:   {}".format(human_time) + bcolors.ENDC)
 
                     print('\n')
+                    """ send message to mobile  with latest infos """
                     if len(argv) == 2 and argv[1] in "-m":
                         print("Sending trading summary sms to mobile... ")
-                        message_body = "\nEth Track \n" + "Wallet: {0:.2f} ETH\n".format(
-                            eth_wallet) + "Net: {0:.2f} EUR\n".format(
-                            net) + "Profit: {0:.2f} EUR".format(profit)
+                        message_body = "Eth Track \n" +\
+                                       "Wallet: {0:.2f} ETH\n".format(eth_wallet) +\
+                                       "Net: {0:.2f} EUR\n".format(net) +\
+                                       "Profit: {0:.2f} EUR".format(profit)
+
                         message = client.api.account.messages.create(
-                            to=my_num,
-                            from_=twilio_num,
-                            body=message_body)
-                    """print("Converter {} EUR".format(
-                        cex.converter(eth_wallet, 'ETH/EUR')['amnt']))"""
-                    print("\n\n\n")
+                                                            to=my_num,
+                                                            from_=twilio_num,
+                                                            body=message_body)
+                    """
+                    print("Converter {} EUR \n\n\n".format(cex.converter(eth_wallet, 'ETH/EUR')['amnt']))
+                    """
 
     time.sleep(update_int)

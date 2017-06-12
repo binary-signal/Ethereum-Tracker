@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
-# Original Author:	t0pep0
-# e-mail:	t0pep0.gentoo@gmail.com
-# added some modifications me
+# Author:	t0pep0
+
 import hmac
 import hashlib
 import time
-import urllib
-from   urllib import request
-from urllib.parse import urlencode
 import json
 import requests
-
 
 
 class API(object):
@@ -29,7 +24,7 @@ class API(object):
     def __nonce(self):
         self.__nonce_v = '{:.10f}'.format(time.time() * 1000).split('.')[0]
 
-    # generate segnature
+    # generate signature
     def __signature(self):
         string = self.__nonce_v + self.__username + self.__api_key  # create string
         signature = hmac.new(bytes(self.__api_secret, 'latin-1'), bytes(string, 'latin-1'),
@@ -38,7 +33,7 @@ class API(object):
 
     def __post(self, url, param):  # Post Request (Low Level API call)
         page = requests.post(url, param)
-        return  page.text
+        return page.text
 
     def api_call(self, method, param={}, private=0,
                  couple=''):  # api call (Middle level)
@@ -48,9 +43,9 @@ class API(object):
         if private == 1:  # add auth-data if needed
             self.__nonce()
             param.update({
-                'key': self.__api_key,
+                'key'      : self.__api_key,
                 'signature': self.__signature(),
-                'nonce': self.__nonce_v})
+                'nonce'    : self.__nonce_v})
         answer = self.__post(url, param)  # Post Request
         return json.loads(answer)  # generate dict and return
 
@@ -74,14 +69,14 @@ class API(object):
 
     def place_order(self, ptype='buy', amount=1, price=1, couple='ETH/EUR'):
         return self.api_call('place_order',
-                             {"type": ptype, "amount": str(amount),
+                             {"type" : ptype, "amount": str(amount),
                               "price": str(price)}, 1, couple)
 
     def price_stats(self, last_hours, max_resp_arr_size, couple='ETH/EUR'):
         return self.api_call(
-            'price_stats',
-            {"lastHours": last_hours, "maxRespArrSize": max_resp_arr_size},
-            0, couple)
+                'price_stats',
+                {"lastHours": last_hours, "maxRespArrSize": max_resp_arr_size},
+                0, couple)
 
     def converter(self, amount, couple='ETH/EUR'):
-        return self.api_call('convert',{"amnt" :amount} ,0, couple)
+        return self.api_call('convert', {"amnt": amount}, 0, couple)
