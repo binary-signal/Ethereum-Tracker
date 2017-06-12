@@ -29,7 +29,7 @@ params = '?convert=EUR&limit=10'
 url = api+endpoint+params
 
 """ update interval for api calls """
-update_int = 3  # every 10 minutes
+update_int = 600  # every 10 minutes
 
 """ setup twilio client """
 client = Client(account_sid, auth_token)
@@ -61,7 +61,7 @@ while True:
 
                     """ latest price in EUR """
                     last_price = cex.ticker()['last']
-                    print(" | Euro:  {0:.2f}".format(float(last_price)))
+                    print(ticker +":        {0:.2f}".format(float(last_price)))
 
                     """ get wallet balance """
                     wallet = cex.balance()
@@ -114,7 +114,7 @@ while True:
 
                     minutes = (update_int/60) * len(past_values_numeric)
                     mean_price = sum(past_values_numeric) / float(len(past_values_numeric))
-                    print("Average price {:d}m : {0:.2f}".format(int(minutes), mean_price))
+                    print("Average price {}m : {}".format(int(minutes), mean_price))
 
                     human_time = datetime.datetime.fromtimestamp(int(entry['last_updated'])).strftime('%d-%m-%Y %H:%M:%S')
                     print(bcolors.MAGENTA + "Last Updated:   {}".format(human_time) + bcolors.ENDC)
