@@ -65,6 +65,9 @@ while True:
 
                     """ get wallet balance """
                     wallet = cex.balance()
+                    if wallet is None:
+                        print("Api error ")
+                        break
                     eth_wallet = float(wallet['ETH']['available'])
 
                     """ calculate net  """
@@ -90,6 +93,9 @@ while True:
 
                     """ get high low values """
                     hl = cex.ticker(ticker)
+                    if hl is None:
+                        print("Api error")
+                        break
                     print("\nLow: {0:.2f} EUR  ".format(float(hl['low'])), end="")
                     print("High: {0:.2f} EUR".format(float(hl['high'])))
 
@@ -132,6 +138,9 @@ while True:
                                                             to=my_num,
                                                             from_=twilio_num,
                                                             body=message_body)
+                        if message is None:
+                            print("Api error")
+                            break
                     """
                     print("Converter {} EUR \n\n\n".format(cex.converter(eth_wallet, 'ETH/EUR')['amnt']))
                     """
