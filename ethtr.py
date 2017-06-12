@@ -61,7 +61,7 @@ while True:
 
                     """ latest price in EUR """
                     last_price = cex.ticker()['last']
-                    print(ticker +":        {0:.2f}".format(float(last_price)))
+                    print(ticker +":        {:.2f}".format(float(last_price)))
 
                     """ get wallet balance """
                     wallet = cex.balance()
@@ -69,22 +69,22 @@ while True:
 
                     """ calculate net  """
                     net = eth_wallet * float(last_price)
-                    print("Net:         {0:.2f} EUR  |".format(net))
+                    print("Net:         {:.2f} EUR  |".format(net))
 
                     """ calculate profit or loss """
                     profit = net - investment - fees
                     if profit > 0:
-                        print("Profit:      " + bcolors.GREEN+"{0:.2f} EUR  ".format(profit) +bcolors.ENDC+  "| ", end="")
+                        print("Profit:      " + bcolors.GREEN+"{:.2f} EUR  ".format(profit) +bcolors.ENDC+  "| ", end="")
                     else:
-                        print("Profit:      " + bcolors.FAIL + "{0:.2f} EUR  ".format(profit) +bcolors.ENDC+  "| ", end="")
+                        print("Profit:      " + bcolors.FAIL + "{:.2f} EUR  ".format(profit) +bcolors.ENDC+  "| ", end="")
 
                     """ calculate return of investment percentage """
                     if net / float(investment) <= 1:
                         calc = (1 - (net / float(investment)))
-                        print("ROI: " + bcolors.FAIL + "-{0:.2f} %".format(100 * calc) +bcolors.ENDC)
+                        print("ROI: " + bcolors.FAIL + "-{:.2f} %".format(100 * calc) +bcolors.ENDC)
                     else:
                         calc = (net / float(investment)) - 1
-                        print("ROI:  " + bcolors.GREEN + "{0:.2f} %".format(100 * calc) + bcolors.ENDC)
+                        print("ROI:  " + bcolors.GREEN + "+{:.2f} %".format(100 * calc) + bcolors.ENDC)
 
                     print("Wallet:   {} ETH".format(eth_wallet))
 
@@ -94,14 +94,14 @@ while True:
                     print("High: {0:.2f} EUR".format(float(hl['high'])))
 
                     """ update history of previews price update """
-                    past_values_numeric.append(float(entry['price_eur']))
-                    if past_values[-1] < entry['price_eur']:
-                        past_values.append(bcolors.GREEN + entry['price_eur'][:6]+ bcolors.ENDC)
-                    elif past_values[-1] == entry['price_eur']:
-                        past_values.append(entry['price_eur'][:6]+bcolors.ENDC)
-                    else:
-                        past_values.append(bcolors.FAIL + entry['price_eur'][:]+bcolors.ENDC)
-                    if len(past_values) == holds + 1:
+                    past_values_numeric.append(float(entry['price_eur']))   # store always numeric value price
+                    if past_values[-1] < entry['price_eur']:     # use new  price is up use green color
+                        past_values.append(bcolors.GREEN + entry['price_eur'][:6] + bcolors.ENDC)
+                    elif past_values[-1] == entry['price_eur']:  # use new  price hasn't changed use no color
+                        past_values.append(entry['price_eur'][:6])
+                    else:  # use new  price is less use red color
+                        past_values.append(bcolors.FAIL + entry['price_eur'][:6] + bcolors.ENDC)
+                    if len(past_values) == holds + 1:      # remove values very old price value
                         past_values.pop(0)
                         past_values_numeric.pop(0)
 
@@ -114,19 +114,19 @@ while True:
 
                     minutes = (update_int/60) * len(past_values_numeric)
                     mean_price = sum(past_values_numeric) / float(len(past_values_numeric))
-                    print("Average price {}m : {}".format(int(minutes), mean_price))
+                    print("Average price {:d}m : {:.2f}".format(int(minutes), mean_price))
 
                     human_time = datetime.datetime.fromtimestamp(int(entry['last_updated'])).strftime('%d-%m-%Y %H:%M:%S')
-                    print(bcolors.MAGENTA + "Last Updated:   {}".format(human_time) + bcolors.ENDC)
+                    print(bcolors.MAGENTA + "Last Updated:   {:s}".format(human_time) + bcolors.ENDC)
 
                     print('\n')
                     """ send message to mobile  with latest infos """
                     if len(argv) == 2 and argv[1] in "-m":
                         print("Sending trading summary sms to mobile... ")
                         message_body = "Eth Track \n" +\
-                                       "Wallet: {0:.2f} ETH\n".format(eth_wallet) +\
-                                       "Net: {0:.2f} EUR\n".format(net) +\
-                                       "Profit: {0:.2f} EUR".format(profit)
+                                       "Wallet: {:.2f} ETH\n".format(eth_wallet) +\
+                                       "Net: {:.2f} EUR\n".format(net) +\
+                                       "Profit: {:.2f} EUR".format(profit)
 
                         message = client.api.account.messages.create(
                                                             to=my_num,
